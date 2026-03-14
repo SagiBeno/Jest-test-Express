@@ -1,7 +1,11 @@
 import request from 'supertest';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import apiModule from '../index.cjs' ;
-const { app } = apiModule;
+const { app, connection } = apiModule;
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 describe('Games endpoint', () => {
 
@@ -45,6 +49,46 @@ describe('Games endpoint', () => {
 
             expect(response.status).toBe(404);
             expect(response.body).toEqual( { error: 'Game not found' } );
+        });
+    });
+
+    describe('POST /games', () => {
+
+        it ('should create a game and return it', async () => {
+            vi.spyOn(connection, 'query')
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, { insertedId: 5 })
+                })
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, [
+                        {
+                            id: '5',
+                            name: 'Portal',
+                            developer: 'Valve',
+                            category_id: 2,
+                            category_name: 'first person shooter'
+                        }
+                    ])
+                })
+            
+                const response = await request(app)
+                    .post('/games')
+                    .send({
+                        name: 'Portal',
+                        developer: 'Valve',
+                        category_id: 2
+                    });
+                
+                expect(response.status).toBe(201);
+                expect(response.body).toEqual(
+                    {
+                        id: '5',
+                        name: 'Portal',
+                        developer: 'Valve',
+                        category_id: 2,
+                        category_name: 'first person shooter'
+                    }
+                );
         });
     });
 
