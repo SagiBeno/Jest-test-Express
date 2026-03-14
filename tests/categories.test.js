@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { describe, it, expect } from 'vitest';
-import { app } from '../index.cjs';
+import apiModule from '../index.cjs' ;
+const { app } = apiModule;
 
 describe('Categories endpoint', () => {
 
