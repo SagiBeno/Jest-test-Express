@@ -149,4 +149,73 @@ describe('Games endpoint', () => {
         });
     });
 
+    describe('PUT /games/:id', () => {
+
+        it('shoud update a game', async () => {
+            vi.spyOn(connection, 'query')
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, { affectedRows: 1 })
+                })
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, [
+                        {
+                            id: 1,
+                            name: 'Super Mario Updated',
+                            developer: 'Nintendo',
+                            category_id: 1,
+                            category_name: 'arcade'
+                        }
+                    ])
+                });
+
+            const response = await request(app)
+                .put('/games/1')
+                .send({
+                    name: 'Super Mario Updated',
+                    developer: 'Nintendo',
+                    category_id: 1
+                })
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({
+                id: 1,
+                name: 'Super Mario Updated',
+                developer: 'Nintendo',
+                category_id: 1,
+                category_name: 'arcade'
+            });
+        });
+
+        it('should return 404 when game does not exist', async () => {
+            vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
+                callback(null, { affectedRows: 0 })
+            });
+
+            const response = await request(app)
+                .put('/games/999999')
+                .send({
+                    name: 'Phasmophobia',
+                    developer: 'Kinetic Games',
+                    category_id: 2
+                });
+            
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual( { error: 'Game not found' } );
+        });
+
+        it('should return 400 for invalid id', async () => {
+
+            const response = await request(app)
+                .put('/games/id')
+                .send({
+                    name: 'Phasmophobia',
+                    developer: 'Kinetic Games',
+                    category_id: 2
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'Invalid game id' } );
+        });
+    });
+
 });
