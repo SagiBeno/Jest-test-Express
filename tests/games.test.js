@@ -5,7 +5,7 @@ const { app } = apiModule;
 
 describe('Games endpoint', () => {
 
-    it('GET /games should return category list', async () => {
+    it('GET /games should return games list', async () => {
         const response = await request(app).get('/games');
 
         expect(response.status).toBe(200);
