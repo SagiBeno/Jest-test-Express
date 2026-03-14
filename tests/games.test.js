@@ -116,4 +116,37 @@ describe('Games endpoint', () => {
         });
     });
 
+    describe('DELETE /games/:id', () => {
+
+        it('should return 204 when game is deleted', async () => {
+            vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
+                callback(null, { affectedRows: 1 })
+            });
+
+            const response = await request(app).delete('/games/4');
+
+            expect(response.status).toBe(204);
+            expect(response.text).toBe('');
+        });
+
+        it('should return 400 for invalid id', async () => {
+
+            const response = await request(app).delete('/games/id');
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'Invalid game id' } );
+        });
+
+        it('should return 404 when game does not exist', async () => {
+            vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
+                callback(null, { affectedRows: 0 })
+            });
+
+            const response = await request(app).delete('/games/9999999');
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual( { error: 'Game not found' } );
+        });
+    });
+
 });
