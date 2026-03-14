@@ -218,4 +218,80 @@ describe('Games endpoint', () => {
         });
     });
 
+    describe('PATCH /games/:id', () => {
+
+        it('should partially update a game', async () => {
+
+            vi.spyOn(connection, 'query')
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, [
+                        {
+                            id: 1,
+                            name: 'Super Mario',
+                            developer: null,
+                            category_id: 1
+                        }
+                    ])
+                })
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, { affectedRows: 1 })
+                })
+                .mockImplementationOnce((sql, params, callback) => {
+                    callback(null, [
+                        {
+                            id: 1,
+                            name: 'Super Mario',
+                            developer: 'Nintendo',
+                            category_id: 1,
+                            category_name: 'arcade'
+                        }
+                    ])
+                });
+
+            const response = await request(app)
+                .patch('/games/1')
+                .send( { developer: 'Nintendo' } );
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({
+                id: 1,
+                name: 'Super Mario',
+                developer: 'Nintendo',
+                category_id: 1,
+                category_name: 'arcade'   
+            });
+        });
+
+        it('should return 400 when no fields are provided', async () => {
+            const response = await request(app)
+                .patch('/games/1')
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'At least one field is required' } );
+        });
+
+        it('should return 400 for invalid id', async () => {
+            const response = await request(app)
+                .patch('/games/id')
+                .send( { developer: 'Nintendo' } );
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'Invalid game id' } );
+        });
+
+        it('should return 404 when game does not exist', async () =>{
+            vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
+                callback(null, [])
+            });
+
+            const response = await request(app)
+                .patch('/games/999999')
+                .send( { developer: 'Nintendo' } );
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual( { error: 'Game not found' } );
+        });
+    });
+
 });
