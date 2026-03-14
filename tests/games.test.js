@@ -54,7 +54,7 @@ describe('Games endpoint', () => {
 
     describe('POST /games', () => {
 
-        it ('should create a game and return it', async () => {
+        it('should create a game and return it', async () => {
             vi.spyOn(connection, 'query')
                 .mockImplementationOnce((sql, params, callback) => {
                     callback(null, { insertedId: 5 })
@@ -89,6 +89,30 @@ describe('Games endpoint', () => {
                         category_name: 'first person shooter'
                     }
                 );
+        });
+
+        it('should retrun 400 when name is missing', async () => {
+            const response = await request(app)
+                .post('/games')
+                .send({
+                    category_id: 1
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'name and category_id are required' } );
+        });
+
+        it('should return 400 when category_id is not integer', async () => {
+            const response = await request(app)
+                .post('/games')
+                .send({
+                    name: 'Portal',
+                    developer: 'Valve',
+                    category_id: 'id'
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'category_id must be an integer or null' } );
         });
     });
 
