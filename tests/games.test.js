@@ -121,11 +121,24 @@ describe('Games endpoint', () => {
                 .send({
                     name: '',
                     developer: 'Valve',
-                    category_id: 'id'
+                    category_id: 1
                 });
             
             expect(response.status).toBe(400);
             expect(response.body).toEqual( { error: 'name must be a non-empty string' } );
+        });
+
+        it('should return 400 when developer is not a string or null', async () => {
+            const response = await request(app)
+                .post('/games')
+                .send({
+                    name: 'Portal',
+                    developer: 1,
+                    category_id: 1
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'developer must be a string or null' } );
         });
 
         it('should return 400 when category_id does not exist', async () => {
