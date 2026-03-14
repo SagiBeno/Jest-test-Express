@@ -114,6 +114,26 @@ describe('Games endpoint', () => {
             expect(response.status).toBe(400);
             expect(response.body).toEqual( { error: 'category_id must be an integer or null' } );
         });
+
+        it('should return 400 when category_id does not exist', async () => {
+            vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
+                callback({
+                    code: 'ER_NO_REFERENCED_ROW_2',
+                    message: 'Foreign key constraint fails'
+                })
+            });
+
+            const response = await request(app)
+                .post('/games')
+                .send({
+                    name: 'Portal',
+                    developer: 'Valve',
+                    category_id: 99999
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'category_id does not exist' } );
+        })
     });
 
     describe('DELETE /games/:id', () => {
