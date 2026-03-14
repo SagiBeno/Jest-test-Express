@@ -4,7 +4,7 @@ import { app } from '../index.cjs';
 
 describe('Categories endpoint', () => {
 
-    it('GET /categories should returncategory list', async () => {
+    it('GET /categories should return category list', async () => {
         const response = await request(app).get('/categories');
 
         expect(response.status).toBe(200);
