@@ -115,6 +115,19 @@ describe('Games endpoint', () => {
             expect(response.body).toEqual( { error: 'category_id must be an integer or null' } );
         });
 
+        it('should return 400 when name is empty string', async () => {
+            const response = await request(app)
+                .post('/games')
+                .send({
+                    name: '',
+                    developer: 'Valve',
+                    category_id: 'id'
+                });
+            
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual( { error: 'name must be a non-empty string' } );
+        });
+
         it('should return 400 when category_id does not exist', async () => {
             vi.spyOn(connection, 'query').mockImplementationOnce((sql, params, callback) => {
                 callback({
